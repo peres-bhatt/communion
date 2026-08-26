@@ -5,24 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>First Holy Communion Invitation - Jaylon Simon</title>
 
-<!-- Open Graph Meta Tags for WhatsApp & Social Media Preview -->
+    <!-- Open Graph Meta Tags for WhatsApp & Social Media Preview -->
     <meta property="og:title" content="First Holy Communion Invitation - Jaylon Simon">
-    <meta property="og:description" content="Join us in celebrating Jaylon Simon's First Holy Communion on Sunday, April 18, 2026.">
+    <meta property="og:description" content="Join us in celebrating Jaylon Simon's First Holy Communion on Sunday, April 18, 2026. <b>Please Consider this as a personal invitation</b>">
     <meta property="og:image" content="https://peres-bhatt.github.io/communion/invite.png">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:type" content="website">
 
-    <!-- Favicon for browser tabs -->
+    <!-- Favicon -->
     <link rel="icon" href="invite.png" type="image/x-icon">
-  
 
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
-
-
-
+    <!-- Canvas Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <style>
         :root {
@@ -31,11 +30,13 @@
             --soft-bg: #fcfbfa;
             --text-dark: #2c3e50;
             --card-bg: #ffffff;
-            --header-bg: linear-gradient(to bottom, #fffdfa, #f5efe6);
+            --header-bg: linear-gradient(135deg, #fffdfa 0%, #f5efe6 100%);
             --grid-bg: #faf8f5;
             --border-color: #eae2d0;
             --text-muted: #666;
             --detail-text: #444;
+            --envelope-bg: #1e293b;
+            --envelope-flap: #334155;
         }
 
         [data-theme="dark"] {
@@ -49,13 +50,15 @@
             --border-color: #333333;
             --text-muted: #aaa;
             --detail-text: #ccc;
+            --envelope-bg: #0f172a;
+            --envelope-flap: #1e293b;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            transition: background-color 0.3s ease, color 0.3s ease;
+            transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
         }
 
         body {
@@ -64,15 +67,157 @@
             color: var(--text-dark);
             line-height: 1.6;
             padding: 20px;
+            overflow-x: hidden;
+            min-height: 100vh;
         }
 
-        /* Control Floating Buttons (Dark Mode & Music) */
+        /* Sparkle Canvas Background */
+        #sparkleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* 3D Envelope Intro Overlay */
+        .envelope-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), visibility 1s;
+        }
+
+        .envelope-overlay.hide {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .envelope-wrapper {
+            perspective: 1000px;
+            width: 320px;
+            height: 220px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .envelope {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .envelope-wrapper:hover .envelope {
+            transform: translateY(-8px) scale(1.02);
+        }
+
+        .envelope-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: var(--envelope-bg);
+            border-radius: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 160px solid transparent;
+            border-right: 160px solid transparent;
+            border-top: 120px solid var(--envelope-flap);
+            transform-origin: top;
+            transition: transform 0.6s ease-in-out, z-index 0.2s step-end;
+            z-index: 4;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+        }
+
+        .envelope-wrapper.open .flap {
+            transform: rotateX(180deg);
+            z-index: 1;
+            transition: transform 0.6s ease-in-out, z-index 0.2s step-start;
+        }
+
+        .envelope-front {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 160px solid var(--envelope-bg);
+            border-right: 160px solid var(--envelope-bg);
+            border-bottom: 110px solid var(--envelope-bg);
+            border-top: 110px solid transparent;
+            border-radius: 0 0 12px 12px;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .seal {
+            position: absolute;
+            top: 75px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary-gold), var(--dark-gold));
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+            z-index: 5;
+            transition: opacity 0.4s ease, transform 0.3s ease;
+        }
+
+        .envelope-wrapper:hover .seal {
+            transform: translateX(-50%) scale(1.1);
+        }
+
+        .envelope-wrapper.open .seal {
+            opacity: 0;
+        }
+
+        .envelope-hint {
+            color: #ffffff;
+            margin-top: 30px;
+            font-size: 15px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; transform: translateY(0); }
+            50% { opacity: 1; transform: translateY(-4px); }
+        }
+
+        /* Floating Controls Bar */
         .controls-bar {
             position: fixed;
             top: 20px;
             right: 20px;
             display: flex;
-            gap: 10px;
+            gap: 12px;
             z-index: 1000;
         }
 
@@ -80,52 +225,71 @@
             background: var(--card-bg);
             border: 2px solid var(--primary-gold);
             color: var(--primary-gold);
-            width: 45px;
-            height: 45px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            font-size: 18px;
-            transition: transform 0.2s, background 0.3s;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+            font-size: 20px;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .control-btn:hover {
-            transform: scale(1.1);
+            transform: scale(1.15) rotate(5deg);
             background: var(--primary-gold);
             color: #fff;
         }
 
+        /* Main Container Animation */
         .invitation-container {
             max-width: 650px;
             margin: 50px auto 30px;
             background: var(--card-bg);
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
             overflow: hidden;
             border: 2px solid var(--primary-gold);
+            position: relative;
+            z-index: 10;
+            opacity: 0;
+            transform: translateY(40px) scale(0.95);
+            transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        /* Header Section */
+        .invitation-container.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        /* Animated Header */
         .header {
             text-align: center;
-            padding: 40px 20px 20px;
+            padding: 50px 20px 30px;
             background: var(--header-bg);
             border-bottom: 1px solid var(--border-color);
+            position: relative;
         }
 
         .cross-icon {
-            font-size: 32px;
+            font-size: 36px;
             color: var(--primary-gold);
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            display: inline-block;
+            animation: floatCross 3s ease-in-out infinite;
+        }
+
+        @keyframes floatCross {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
         }
 
         .header h3 {
             font-family: 'Playfair Display', serif;
             font-weight: 400;
-            letter-spacing: 2px;
+            letter-spacing: 3px;
             text-transform: uppercase;
             font-size: 14px;
             color: var(--text-muted);
@@ -133,15 +297,27 @@
 
         .header h1 {
             font-family: 'Great Vibes', cursive;
-            font-size: 60px;
+            font-size: 64px;
             color: var(--dark-gold);
             margin: 10px 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
         }
 
-        /* Content Body */
+        /* Content Body & Reveal Animations */
         .content {
-            padding: 30px 40px;
+            padding: 35px 40px;
             text-align: center;
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(25px);
+            transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         .invite-text {
@@ -157,27 +333,47 @@
 
         .child-name {
             font-family: 'Playfair Display', serif;
-            font-size: 34px;
+            font-size: 36px;
             color: var(--dark-gold);
             font-weight: 600;
-            margin: 15px 0;
+            margin: 20px 0;
             font-style: italic;
+            position: relative;
+            display: inline-block;
+        }
+
+        .child-name::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary-gold), transparent);
         }
 
         /* Video Section */
         .video-section {
-            margin: 30px 0;
-            border-radius: 12px;
+            margin: 30px 0 10px;
+            border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
             background: #000;
+            border: 2px solid var(--border-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .video-section:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px rgba(212, 175, 55, 0.25);
         }
 
         .video-section video {
             width: 100%;
             height: auto;
             display: block;
-            max-height: 350px;
+            max-height: 380px;
             object-fit: cover;
         }
 
@@ -199,24 +395,37 @@
             border: 1px dashed var(--primary-gold);
             text-align: center;
         }
+
         /* Event Details Grid */
         .details-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
             margin: 30px 0;
-            padding: 20px;
+            padding: 25px;
             background: var(--grid-bg);
-            border-radius: 10px;
-            border-left: 4px solid var(--primary-gold);
+            border-radius: 14px;
+            border-left: 5px solid var(--primary-gold);
             text-align: left;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            transition: transform 0.3s ease;
+        }
+
+        .details-grid:hover {
+            transform: translateY(-2px);
         }
 
         .detail-item h4 {
             font-family: 'Playfair Display', serif;
             color: var(--dark-gold);
-            font-size: 16px;
-            margin-bottom: 5px;
+            font-size: 17px;
+            margin-bottom: 6px;
+        }
+        .detail-item h3 {
+            font-family: 'Playfair Display', serif;
+            color: var(--dark-gold);
+            font-size: 20px;
+            margin-bottom: 1px;
         }
 
         .detail-item p {
@@ -224,32 +433,12 @@
             color: var(--detail-text);
         }
 
-        /* RSVP Button */
-        .rsvp-btn {
-            display: inline-block;
-            background-color: var(--primary-gold);
-            color: white;
-            padding: 12px 35px;
-            border-radius: 30px;
-            text-decoration: none;
-            font-weight: 500;
-            letter-spacing: 1px;
-            transition: background 0.3s ease, transform 0.2s;
-            margin-top: 10px;
-            box-shadow: 0 4px 10px rgba(212, 175, 55, 0.3);
-        }
-
-        .rsvp-btn:hover {
-            background-color: var(--dark-gold);
-            transform: translateY(-2px);
-        }
-
-        /* Fast Navigation Box */
+        /* Navigation Card */
         .navigation-card {
             margin: 25px 0;
-            padding: 20px;
+            padding: 24px;
             background: var(--grid-bg);
-            border-radius: 12px;
+            border-radius: 14px;
             border: 1px dashed var(--primary-gold);
             text-align: center;
         }
@@ -258,28 +447,65 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            background-color: #4285F4;
+            gap: 10px;
+            background: linear-gradient(135deg, #4285F4, #3367d6);
             color: white;
-            padding: 12px 24px;
-            border-radius: 25px;
+            padding: 14px 28px;
+            border-radius: 30px;
             text-decoration: none;
             font-weight: 500;
-            margin-top: 10px;
-            box-shadow: 0 4px 10px rgba(66, 133, 244, 0.3);
-            transition: background 0.3s ease, transform 0.2s;
+            margin-top: 14px;
+            box-shadow: 0 6px 15px rgba(66, 133, 244, 0.3);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .map-btn:hover {
-            background-color: #3367d6;
-            transform: translateY(-2px);
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 10px 20px rgba(66, 133, 244, 0.4);
+        }
+
+        /* Interactive RSVP Button */
+        .rsvp-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary-gold), var(--dark-gold));
+            color: white;
+            padding: 15px 40px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            letter-spacing: 1px;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            margin-top: 15px;
+            box-shadow: 0 6px 18px rgba(212, 175, 55, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .rsvp-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .rsvp-btn:hover::before {
+            left: 100%;
+        }
+
+        .rsvp-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(212, 175, 55, 0.5);
         }
 
         /* Footer */
         .footer {
             text-align: center;
-            padding: 20px;
-            font-size: 13px;
+            padding: 24px;
+            font-size: 14px;
             color: var(--text-muted);
             border-top: 1px solid var(--border-color);
             background: var(--header-bg);
@@ -291,25 +517,49 @@
                 grid-template-columns: 1fr;
             }
             .content {
-                padding: 20px;
+                padding: 25px 20px;
+            }
+            .header h1 {
+                font-size: 52px;
+            }
+            .child-name {
+                font-size: 30px;
             }
         }
     </style>
 </head>
 <body data-theme="light">
 
-    <!-- Floating Action Controls (Dark Mode & Audio Toggle) -->
+    <!-- Ambient Sparkle Canvas Background -->
+    <canvas id="sparkleCanvas"></canvas>
+
+    <!-- 3D Interactive Envelope Overlay -->
+    <div class="envelope-overlay" id="envelopeOverlay">
+        <div class="envelope-wrapper" id="envelopeWrapper">
+            <div class="envelope">
+                <div class="envelope-back"></div>
+                <div class="flap"></div>
+                <div class="envelope-front"></div>
+                <div class="seal">✝</div>
+            </div>
+        </div>
+        <div class="envelope-hint">✨ Tap to open invitation ✨</div>
+    </div>
+
+    <!-- Floating Action Controls (Dark Mode & Music) -->
     <div class="controls-bar">
+        <button class="control-btn" id="musicToggle" title="Toggle Music">🎵</button>
         <button class="control-btn" id="themeToggle" title="Toggle Dark/Light Mode">🌙</button>
     </div>
 
     <!-- Background Audio Player -->
     <audio id="bgMusic" loop>
-        <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf756.mp3?filename=gentle-piano-10884.mp3" type="audio/mpeg">
+        <source src="https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=inspiring-cinematic-10580.mp3" type="audio/mpeg">
         Your browser does not support the audio element.
     </audio>
 
-    <div class="invitation-container">
+    <!-- Main Invitation Card Container -->
+    <div class="invitation-container" id="invitationContainer">
         <!-- Header -->
         <div class="header">
             <div class="cross-icon">✝</div>
@@ -319,35 +569,29 @@
 
         <!-- Body Content -->
         <div class="content">
-            <p class="invite-text">
+            <p class="invite-text reveal">
                 With great joy and gratitude to God, we <span class="parents-names">Jonah & Sheela Peris Bhatt</span> warmly invite you to share in our happiness as our son
             </p>
             
-            <div class="child-name">Jaylon Simon Peris Bhatt</div>
+            <div class="child-name reveal">Jaylon Simon Peris Bhatt</div>
             
-            <p class="invite-text">
-                receives the Sacrament of the Eucharist for the very first time on Sunday, April 18, 2026 at 8:00 AM Mass at St. Francis Xavier Church, Bejai, Mangalore.
+            <p class="invite-text reveal">
+                receives the Sacrament of the Eucharist for the very first time on <strong>Sunday, April 18, 2026</strong> at <b>8:00 AM</b> Mass at St. Francis Xavier Church, Bejai, Mangalore.
             </p>
 
-
-
-            
-            <!-- Video Message with Custom Thumbnail Poster & Direct Direct MP4 Video Stream -->
-            <div class="video-section video-grid">
+            <!-- Video Message -->
+            <div class="video-section reveal video-grid">
                 <video controls preload="metadata" poster="Communion.jpg">
                     <source src="jaylon.mp4" type="video/mp4">
                     Your browser does not support the video tag.
                 </video>
             </div>
-            <p class="video-caption">▶ Press play to watch a special personal invitation from Jaylon!</p>
-
-
-
+            <p class="video-caption reveal">▶ Press play to watch a special personal invitation from Jaylon!</p>
 
 
             <!-- Event Details -->
-            <div class="details-grid">
-                <div class="detail-item"><h4>Celebration:</h4></div><br>
+            <div class="details-grid reveal">
+                <div class="detail-item"><h3>Celebration:</h3></div><br>
             <div class="detail-item">
                     <h4>📅 Date & Time</h4>
                     <p>Sunday, April 18, 2026<br>At 11:00 AM</p>
@@ -359,7 +603,7 @@
             </div>
 
             <!-- Fast Navigation Box -->
-            <div class="navigation-card">
+            <div class="navigation-card reveal">
                 <h4>📍 Getting to the Venue</h4>
                 <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Tap below to open directions directly in Google Maps</p>
                 <a href="https://www.google.com/maps/search/?api=1&query=Bejai+Church+Hall+Mangalore" class="map-btn" target="_blank">
@@ -368,18 +612,72 @@
             </div>
 
             <!-- RSVP Action -->
-            <a href="https://wa.me/9113271389?text=Hi,%20I%20would%20love%20to%20attend%20Jaylon's%20First%20Holy%20Communion!" class="rsvp-btn" target="_blank">RSVP via WhatsApp</a>
+            <div class="reveal">
+                <a href="https://wa.me/9113271389?text=Hi,%20I%20would%20love%20to%20attend%20Jaylon's%20First%20Holy%20Communion!" class="rsvp-btn" target="_blank">RSVP via WhatsApp</a>
+            </div>
         </div>
 
         <!-- Footer -->
         <div class="footer">
-            <p>Your <b>presence & blessings</b> will be our treasured gift.</p>
+            <p>Your presence & blessings will be our treasured gift.</p>
         </div>
     </div>
 
-    <!-- JavaScript for Dark Mode & Music Toggle Functionality -->
+    <!-- Animation & Interactive Scripts -->
     <script>
-        // Dark Mode Toggle Logic
+        // --- 1. Envelope Opening & Reveal Animation ---
+        const envelopeWrapper = document.getElementById('envelopeWrapper');
+        const envelopeOverlay = document.getElementById('envelopeOverlay');
+        const invitationContainer = document.getElementById('invitationContainer');
+        const bgMusic = document.getElementById('bgMusic');
+        const musicToggle = document.getElementById('musicToggle');
+
+        envelopeWrapper.addEventListener('click', () => {
+            // Open envelope flap
+            envelopeWrapper.classList.add('open');
+
+            // Trigger Confetti
+            fireConfetti();
+
+            // Try playing background music automatically
+            bgMusic.play().then(() => {
+                musicToggle.textContent = '🔊';
+            }).catch(() => {
+                // Autoplay blocked by browser policy
+                musicToggle.textContent = '🎵';
+            });
+
+            // Fade out envelope overlay and reveal container
+            setTimeout(() => {
+                envelopeOverlay.classList.add('hide');
+                invitationContainer.classList.add('visible');
+                triggerScrollReveals();
+            }, 800);
+        });
+
+        // --- 2. Confetti Explosion ---
+        function fireConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 80,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#d4af37', '#aa820a', '#ffffff', '#fcfbfa']
+                });
+            }
+        }
+
+        // --- 3. Scroll Reveal Animation ---
+        function triggerScrollReveals() {
+            const reveals = document.querySelectorAll('.reveal');
+            reveals.forEach((element, index) => {
+                setTimeout(() => {
+                    element.classList.add('active');
+                }, index * 150);
+            });
+        }
+
+        // --- 4. Dark/Light Theme Toggle ---
         const themeToggleBtn = document.getElementById('themeToggle');
         const bodyElement = document.body;
 
@@ -394,6 +692,71 @@
             }
         });
 
+        // --- 5. Background Music Toggle ---
+        musicToggle.addEventListener('click', () => {
+            if (bgMusic.paused) {
+                bgMusic.play();
+                musicToggle.textContent = '🔊';
+            } else {
+                bgMusic.pause();
+                musicToggle.textContent = '🎵';
+            }
+        });
+
+        // --- 6. Floating Sparkle Particles (Canvas Animation) ---
+        const canvas = document.getElementById('sparkleCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2.5 + 0.5;
+                this.speedY = Math.random() * 0.5 + 0.2;
+                this.opacity = Math.random() * 0.6 + 0.2;
+                this.fadeSpeed = Math.random() * 0.01 + 0.005;
+            }
+
+            update() {
+                this.y -= this.speedY;
+                this.opacity -= this.fadeSpeed;
+                if (this.y < 0 || this.opacity <= 0) {
+                    this.reset();
+                    this.y = canvas.height + 10;
+                }
+            }
+
+            draw() {
+                ctx.fillStyle = `rgba(212, 175, 55, ${this.opacity})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        const particles = Array.from({ length: 45 }, () => new Particle());
+
+        function animateSparkles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateSparkles);
+        }
+
+        animateSparkles();
     </script>
 </body>
 </html>
