@@ -617,146 +617,184 @@
             </div>
         </div>
 
+
+
+
         <!-- Footer -->
         <div class="footer">
             <p>Your presence & blessings will be our treasured gift.</p>
         </div>
     </div>
 
-    <!-- Animation & Interactive Scripts -->
-    <script>
-        // --- 1. Envelope Opening & Reveal Animation ---
-        const envelopeWrapper = document.getElementById('envelopeWrapper');
-        const envelopeOverlay = document.getElementById('envelopeOverlay');
-        const invitationContainer = document.getElementById('invitationContainer');
-        const bgMusic = document.getElementById('bgMusic');
-        const musicToggle = document.getElementById('musicToggle');
 
-        envelopeWrapper.addEventListener('click', () => {
-            // Open envelope flap
-            envelopeWrapper.classList.add('open');
 
-            // Trigger Confetti
-            fireConfetti();
 
-            // Try playing background music automatically
-            bgMusic.play().then(() => {
-                musicToggle.textContent = '🔊';
-            }).catch(() => {
-                // Autoplay blocked by browser policy
-                musicToggle.textContent = '🎵';
+
+
+
+
+   <script>
+    // --- 1. Envelope Opening & Reveal Animation ---
+    const envelopeWrapper = document.getElementById('envelopeWrapper');
+    const envelopeOverlay = document.getElementById('envelopeOverlay');
+    const invitationContainer = document.getElementById('invitationContainer');
+    const bgMusic = document.getElementById('bgMusic');
+    const musicToggle = document.getElementById('musicToggle');
+
+    envelopeWrapper.addEventListener('click', () => {
+        envelopeWrapper.classList.add('open');
+        fireConfetti();
+
+        bgMusic.play().then(() => {
+            musicToggle.textContent = '🔊';
+        }).catch(() => {
+            musicToggle.textContent = '🎵';
+        });
+
+        setTimeout(() => {
+            envelopeOverlay.classList.add('hide');
+            invitationContainer.classList.add('visible');
+            triggerScrollReveals();
+        }, 800);
+    });
+
+    // --- 2. Confetti Explosion ---
+    function fireConfetti() {
+        if (typeof confetti === 'function') {
+            confetti({
+                particleCount: 80,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#d4af37', '#aa820a', '#ffffff', '#fcfbfa']
             });
+        }
+    }
 
-            // Fade out envelope overlay and reveal container
+    // --- 3. Scroll Reveal Animation ---
+    function triggerScrollReveals() {
+        const reveals = document.querySelectorAll('.reveal');
+        reveals.forEach((element, index) => {
             setTimeout(() => {
-                envelopeOverlay.classList.add('hide');
-                invitationContainer.classList.add('visible');
-                triggerScrollReveals();
-            }, 800);
+                element.classList.add('active');
+            }, index * 150);
         });
+    }
 
-        // --- 2. Confetti Explosion ---
-        function fireConfetti() {
-            if (typeof confetti === 'function') {
-                confetti({
-                    particleCount: 80,
-                    spread: 70,
-                    origin: { y: 0.6 },
-                    colors: ['#d4af37', '#aa820a', '#ffffff', '#fcfbfa']
-                });
-            }
+    // --- 4. Dark/Light Theme Toggle ---
+    const themeToggleBtn = document.getElementById('themeToggle');
+    const bodyElement = document.body;
+
+    themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = bodyElement.getAttribute('data-theme');
+        if (currentTheme === 'light') {
+            bodyElement.setAttribute('data-theme', 'dark');
+            themeToggleBtn.textContent = '☀️';
+        } else {
+            bodyElement.setAttribute('data-theme', 'light');
+            themeToggleBtn.textContent = '🌙';
         }
+    });
 
-        // --- 3. Scroll Reveal Animation ---
-        function triggerScrollReveals() {
-            const reveals = document.querySelectorAll('.reveal');
-            reveals.forEach((element, index) => {
-                setTimeout(() => {
-                    element.classList.add('active');
-                }, index * 150);
-            });
+    // --- 5. Background Music Toggle ---
+    musicToggle.addEventListener('click', () => {
+        if (bgMusic.paused) {
+            bgMusic.play();
+            musicToggle.textContent = '🔊';
+        } else {
+            bgMusic.pause();
+            musicToggle.textContent = '🎵';
         }
+    });
 
-        // --- 4. Dark/Light Theme Toggle ---
-        const themeToggleBtn = document.getElementById('themeToggle');
-        const bodyElement = document.body;
+    // --- 6. Video & Background Music Sync ---
+    const video = document.querySelector('.video-section video');
 
-        themeToggleBtn.addEventListener('click', () => {
-            const currentTheme = bodyElement.getAttribute('data-theme');
-            if (currentTheme === 'light') {
-                bodyElement.setAttribute('data-theme', 'dark');
-                themeToggleBtn.textContent = '☀️';
-            } else {
-                bodyElement.setAttribute('data-theme', 'light');
-                themeToggleBtn.textContent = '🌙';
-            }
-        });
+    if (video) {
+        // Track whether music was playing before video was played
+        let wasMusicPlayingBeforeVideo = false;
 
-        // --- 5. Background Music Toggle ---
-        musicToggle.addEventListener('click', () => {
-            if (bgMusic.paused) {
-                bgMusic.play();
-                musicToggle.textContent = '🔊';
-            } else {
+        video.addEventListener('play', () => {
+            if (!bgMusic.paused) {
+                wasMusicPlayingBeforeVideo = true;
                 bgMusic.pause();
                 musicToggle.textContent = '🎵';
             }
         });
 
-        // --- 6. Floating Sparkle Particles (Canvas Animation) ---
-        const canvas = document.getElementById('sparkleCanvas');
-        const ctx = canvas.getContext('2d');
+        video.addEventListener('pause', () => {
+            if (wasMusicPlayingBeforeVideo) {
+                bgMusic.play().then(() => {
+                    musicToggle.textContent = '🔊';
+                }).catch(() => {});
+            }
+        });
 
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+        video.addEventListener('ended', () => {
+            if (wasMusicPlayingBeforeVideo) {
+                bgMusic.play().then(() => {
+                    musicToggle.textContent = '🔊';
+                }).catch(() => {});
+            }
+        });
+    }
+
+    // --- 7. Floating Sparkle Particles (Canvas Animation) ---
+    const canvas = document.getElementById('sparkleCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    class Particle {
+        constructor() {
+            this.reset();
         }
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
 
-        class Particle {
-            constructor() {
+        reset() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 2.5 + 0.5;
+            this.speedY = Math.random() * 0.5 + 0.2;
+            this.opacity = Math.random() * 0.6 + 0.2;
+            this.fadeSpeed = Math.random() * 0.01 + 0.005;
+        }
+
+        update() {
+            this.y -= this.speedY;
+            this.opacity -= this.fadeSpeed;
+            if (this.y < 0 || this.opacity <= 0) {
                 this.reset();
-            }
-
-            reset() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.size = Math.random() * 2.5 + 0.5;
-                this.speedY = Math.random() * 0.5 + 0.2;
-                this.opacity = Math.random() * 0.6 + 0.2;
-                this.fadeSpeed = Math.random() * 0.01 + 0.005;
-            }
-
-            update() {
-                this.y -= this.speedY;
-                this.opacity -= this.fadeSpeed;
-                if (this.y < 0 || this.opacity <= 0) {
-                    this.reset();
-                    this.y = canvas.height + 10;
-                }
-            }
-
-            draw() {
-                ctx.fillStyle = `rgba(212, 175, 55, ${this.opacity})`;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
+                this.y = canvas.height + 10;
             }
         }
 
-        const particles = Array.from({ length: 45 }, () => new Particle());
-
-        function animateSparkles() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => {
-                p.update();
-                p.draw();
-            });
-            requestAnimationFrame(animateSparkles);
+        draw() {
+            ctx.fillStyle = `rgba(212, 175, 55, ${this.opacity})`;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
         }
+    }
 
-        animateSparkles();
-    </script>
+    const particles = Array.from({ length: 45 }, () => new Particle());
+
+    function animateSparkles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+            p.update();
+            p.draw();
+        });
+        requestAnimationFrame(animateSparkles);
+    }
+
+    animateSparkles();
+</script>
+
+
+
 </body>
 </html>
